@@ -47,6 +47,8 @@ resolve_dataset <- function(dataset, config, data_dir = NULL) {
   stopifnot(is.numeric(cfg$n_prefilter), cfg$n_prefilter >= 1)
   stopifnot(is.numeric(cfg$seed))
   stopifnot(is.numeric(cfg$cv_folds), cfg$cv_folds >= 2)
+  stopifnot(is.numeric(cfg$rbr_bins), cfg$rbr_bins >= 1)
+  stopifnot(is.numeric(cfg$rbr_i0), cfg$rbr_i0 >= 1, cfg$rbr_i0 <= cfg$rbr_bins)
   stopifnot(all(cfg$stepsize > 0), all(cfg$stepsize <= 1))
   stopifnot(cfg$train_numerator < cfg$train_denominator)
 

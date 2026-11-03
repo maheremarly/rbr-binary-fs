@@ -40,6 +40,10 @@ defaults:
   rbr_draws: 10000
   rbr_bins: 100
 
+  # Prior quantile the relative belief ratio is evaluated at, as an index into
+  # the bins above, and the first bin the strength sums over.
+  rbr_i0: 5
+
 data:
 
   # automl.chalearn.org

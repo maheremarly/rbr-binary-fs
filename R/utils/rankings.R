@@ -15,7 +15,10 @@
 #'   "Symmetric Uncertainty" and names, one row per feature.
 score_features <- function(data, prior, cfg) {
   message("==> Scoring ", ncol(data) - 1, " features with the RBR filter")
-  scores <- rbr_filter(data, "y", prior = prior, B = cfg$rbr_draws, M = cfg$rbr_bins)
+  scores <- rbr_filter(
+    data, "y",
+    prior = prior, B = cfg$rbr_draws, M = cfg$rbr_bins, i0 = cfg$rbr_i0
+  )
 
   # Drop the Feature column: the row names carry the feature names from here on,
   # supplied by the baseline filters in the cbind below.

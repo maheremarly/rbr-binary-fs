@@ -5,11 +5,18 @@
 # Kullback-Leibler distance between the two class-conditional normals and their
 # precision-weighted pool. psi is sampled B times from the prior and B times
 # from the posterior; the relative belief ratio at psi -> 0 is then the ratio of
-# the two distribution functions at the 1/M prior quantile, and the strength is
-# the posterior mass on discrepancies no more surprising than that ratio.
+# the two distribution functions at the i0 / M prior quantile, and the strength
+# is the posterior mass, from that bin upwards, on discrepancies no more
+# surprising than the ratio.
+#
+# The paper puts i0 / M at roughly 0.05, which is where i0 defaults.
 #
 # A SMALL strength means strong evidence against equality of the means, so
 # features are ranked by ASCENDING strength (see R/utils/rankings.R).
+
+
+#' Prior quantile index closest to the 0.05 the paper asks for.
+default_i0 <- function(M) max(1, round(0.05 * M))
 
 
 #' Relative belief ratio and strength for one feature, from its class summaries.
@@ -20,9 +27,16 @@
 #' @param prior Output of rbr_prior().
 #' @param B Monte Carlo sample size for the prior and posterior discrepancies.
 #' @param M Number of prior quantile bins used to discretise the ratio.
+#' @param i0 Index of the prior quantile the ratio is evaluated at, and the
+#'   first bin the strength sums over. Defaults to the 0.05 quantile.
 #' @return A one-row matrix with columns RB_dist and strength.
 rbr_two_sample <- function(xbar1, xbar2, s_sqr1, s_sqr2, n1, n2,
-                           prior, B = 10000, M = 100) {
+                           prior, B = 10000, M = 100,
+                           i0 = default_i0(M)) {
+  if (i0 < 1 || i0 > M) {
+    stop("i0 must lie between 1 and M (", M, "), not ", i0, ".", call. = FALSE)
+  }
+
   alpha0  <- prior$alpha0
   beta0   <- prior$beta0
   mu0     <- prior$mu0
@@ -75,22 +89,23 @@ rbr_two_sample <- function(xbar1, xbar2, s_sqr1, s_sqr2, n1, n2,
                     ((mu_post_pool - mu_post2)^2 / var_post2)) / 2
   }
 
-  # Relative belief ratio at the smallest prior quantile bin.
+  # Relative belief ratio at the i0 / M prior quantile.
   psi_prior <- matrix(0, M + 1, 1)
   for (i in 1:M) psi_prior[i + 1] <- quantile(d_prior, i / M)
-  psi_star <- psi_prior[2]
+  psi_star <- psi_prior[i0 + 1]
 
   Fn_prior <- ecdf(d_prior)
   Fn_post  <- ecdf(d_post)
   RB_dist  <- Fn_post(psi_star) / Fn_prior(psi_star)
 
-  # Strength: posterior mass on bins whose ratio does not exceed RB_dist.
+  # Strength: posterior mass, over the bins from i0 upwards, on those whose
+  # ratio does not exceed RB_dist.
   RBR_hat <- matrix(0, M, 1)
   for (i in 1:M) {
     RBR_hat[i] <- M * (Fn_post(psi_prior[i + 1]) - Fn_post(psi_prior[i]))
   }
   bin_mass <- matrix(0, M, 1)
-  for (i in 1:M) {
+  for (i in i0:M) {
     if (RBR_hat[i] <= RB_dist) {
       bin_mass[i] <- Fn_post(psi_prior[i + 1]) - Fn_post(psi_prior[i])
     }
@@ -106,8 +121,10 @@ rbr_two_sample <- function(xbar1, xbar2, s_sqr1, s_sqr2, n1, n2,
 #' @param target_variable Name of the target column.
 #' @param prior Output of rbr_prior().
 #' @param B,M Monte Carlo sample size and number of prior quantile bins.
+#' @param i0 Prior quantile index, as in rbr_two_sample().
 #' @return A data frame with one row per feature: Feature, RB_dist, strength.
-rbr_filter <- function(d, target_variable, prior, B = 10000, M = 100) {
+rbr_filter <- function(d, target_variable, prior, B = 10000, M = 100,
+                       i0 = default_i0(M)) {
   d[[target_variable]] <- as.factor(d[[target_variable]])
 
   features <- setdiff(names(d), target_variable)
@@ -124,7 +141,7 @@ rbr_filter <- function(d, target_variable, prior, B = 10000, M = 100) {
 
     result <- rbr_two_sample(
       xbar[1], xbar[2], v[1], v[2], n[1], n[2],
-      prior = prior, B = B, M = M
+      prior = prior, B = B, M = M, i0 = i0
     )
     scores[j, ] <- c(features[j], result[1], result[2])
   }
