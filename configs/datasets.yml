@@ -1,0 +1,69 @@
+# Dataset sources and run settings for every dataset in the paper.
+#
+# Each entry under `data:` is read as a CSV from <data_dir>/<file>, so the only
+# thing that has to be edited to run the pipeline is `data_dir` below. The
+# `defaults:` block holds the settings shared by all eighteen datasets; a
+# per-dataset key overrides it.
+#
+# The datasets are not redistributed here. Sources are given in the README; the
+# shape columns in the comments are the ones reported in the paper, as a check
+# that the right file has been placed in `data_dir`.
+
+# Directory holding the CSV files. Override on the command line with --data_dir.
+data_dir: "data"
+
+defaults:
+  # Name of the class column in the CSV, before it is renamed to `y`.
+  target: "class"
+
+  # Features kept by the univariate t-test screen that runs before the filters.
+  # Set per dataset below; the default keeps every feature.
+  n_prefilter: 100000
+
+  # Train / held-out split, as two integers -- see R/utils/config.R for why.
+  train_numerator: 2
+  train_denominator: 3
+
+  # Seed set before the shuffle, and again before every single model fit.
+  seed: 101
+
+  # Seed and fold count for the cross-validation on the held-out set.
+  cv_seed: 2394239
+  cv_folds: 5
+
+  # Fractions of the ranked feature set to retain, in the paper's order.
+  stepsize: [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+
+  # Monte Carlo sample size and number of prior quantile bins for the RBR
+  # filter. These set its cost: it is roughly twenty times slower than
+  # information gain or symmetric uncertainty.
+  rbr_draws: 10000
+  rbr_bins: 100
+
+data:
+
+  # automl.chalearn.org
+  philippine:         {file: "philippine.csv"}          # 5832 x 309
+
+  # www.openml.org
+  optdigits:          {file: "optdigits.csv"}           # 5620 x  64
+  satellite:          {file: "satellite.csv"}           # 5100 x  37
+  image_desert:       {file: "image_desert.csv"}        # 2000 x 140
+  image_mountains:    {file: "image_mountains.csv"}     # 2000 x 140
+  image_sea:          {file: "image_sea.csv"}           # 2000 x 140
+  image_sunset:       {file: "image_sunset.csv"}        # 2000 x 140
+
+  # mulan.sourceforge.net
+  scene_beach:        {file: "scene_beach.csv"}         # 2407 x 295
+  scene_fallfoliage:  {file: "scene_fallfoliage.csv"}   # 2407 x 295
+  scene_field:        {file: "scene_field.csv"}         # 2407 x 295
+  scene_mountain:     {file: "scene_mountain.csv"}      # 2407 x 295
+  scene_sunset:       {file: "scene_sunset.csv"}        # 2407 x 295
+  scene_urban:        {file: "scene_urban.csv"}         # 2407 x 295
+
+  # archive.ics.uci.edu
+  musk:               {file: "musk.csv", n_prefilter: 166}  # 6598 x 170
+  ionosphere:         {file: "ionosphere.csv"}          #  351 x  34
+  toxicity:           {file: "toxicity.csv"}            #  171 x 1203
+  period_changer:     {file: "period_changer.csv"}      #   90 x 1177
+  madelon:            {file: "madelon.csv"}             # 4400 x 500

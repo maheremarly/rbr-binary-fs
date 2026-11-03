@@ -1,0 +1,37 @@
+Package: rbr.binary.fs
+Title: Feature Selection in Binary Classification Problems Using Relative
+    Belief Ratio
+Version: 1.0.0
+Authors@R: c(
+    person("Ayman", "Alzaatreh", role = "aut"),
+    person("Maher", "Emarly", email = "maheremarly1@gmail.com", role = c("aut", "cre")),
+    person("Rohan", "Mitra", role = "aut"),
+    person("Luai", "Al-Labadi", role = "aut"))
+Description: Code for the paper of the same name (Physica Scripta 100(8),
+    086010, 2025). Scores each continuous feature by the relative belief ratio
+    evidence against equality of its class-conditional means, ranks the features
+    by the resulting strength, and evaluates the ranking against information
+    gain and symmetric uncertainty with four classifiers under cross-validation.
+    This is a research project, not an installable package: the modules in R/
+    are sourced by the entry points in scripts/.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends:
+    R (>= 4.0.0)
+Imports:
+    abind,
+    arm,
+    caret,
+    class,
+    dplyr,
+    e1071,
+    FSelector,
+    ggplot2,
+    gridExtra,
+    openxlsx,
+    randomForest,
+    reshape2,
+    ROCR,
+    scales,
+    yaml
+SystemRequirements: Java (>= 8), required by FSelector via RWeka
